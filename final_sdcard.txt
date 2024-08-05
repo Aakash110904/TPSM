@@ -1,0 +1,111 @@
+import machine
+import utime
+import uos
+from chittiSat.mq2 import MQ2
+from chittiSat.gyro import MPU6050
+from chittiSat.pressure import *
+from chittiSat.sdcard import*
+from chittiSat.assistant import *
+
+i2c=machine.I2C(0,scl=machine.Pin(1),sda=machine.Pin(0)) #i2c configuration
+spi=machine.SPI(1,sck=machine.Pin(14),mosi=machine.Pin(15),miso=machine.Pin(12)) #spi configuration
+
+device_i2c=i2c.scan()
+if device_i2c:
+    print(device_i2c)
+    
+sensor=MQ2(pinData=26)
+bmp=BMP280(i2c)
+mpu=MPU6050(i2c)
+sd=SDCard(spi)
+
+sensor.calibrate()
+calibrate.pressure(bmp)
+uos.mount(sd, '/sd')
+print("sd connected")
+
+myfile='/sd/satellite.csv'
+
+with open(myfile,"w") as f:
+    f.write("Time")
+    f.write(",")
+    f.write("Pressure")
+    f.write(",")
+    f.write("Temperature")
+    f.write(",")
+    f.write("Smoke")
+    f.write(",")
+    f.write("LPG")
+    f.write(",")
+    f.write("Methane")
+    f.write(",")
+    f.write("Hydrogen")
+    f.write(",")
+    f.write("Ax")
+    f.write(",")
+    f.write("Ay")
+    f.write(",")
+    f.write("Az")
+    f.write(",")
+    f.write("gx")
+    f.write(",")
+    f.write("gy")
+    f.write(",")
+    f.write("gz")
+    f.write(",")
+    
+    f.write("\n")
+    
+    while True:
+        t=time.ticks_ms()/1000
+        Pressure=bmp.pressure
+        Temperature=bmp.temperature
+        Gas=sensor.readLPG()
+        Smoke=sensor.readSmoke()
+        Methane=sensor.readMethane()
+        Hydrogen=sensor.readHydrogen()
+        gx=round(mpu.gyro.x,2)
+        gy=round(mpu.gyro.y,2)
+        gz=round(mpu.gyro.z,2)
+        ax=round(mpu.accel.x,2)
+        ay=round(mpu.accel.y,2)
+        az=round(mpu.accel.z,2)
+
+        f.write(str(t))
+        f.write(",")
+        f.write(str(Pressure))
+        f.write(",")
+        f.write(str(Temperature))
+        f.write(",")
+        f.write(str(Smoke))
+        f.write(",")
+        f.write(str(Gas))
+        f.write(",")
+        f.write(str(Methane))
+        f.write(",")
+        f.write(str(Hydrogen))
+        f.write(",")
+        f.write(str(ax))
+        f.write(",")
+        f.write(str(ay))
+        f.write(",")
+        f.write(str(az))
+        f.write(",")
+        f.write(str(gx))
+        f.write(",")
+        f.write(str(gy))
+        f.write(",")
+        f.write(str(gz))
+        f.write(",")
+        
+        f.write("\n")
+        
+        f.flush()
+        
+        print("value saved")
+        
+        utime.sleep(0.5)
+    
+    
+        
+
